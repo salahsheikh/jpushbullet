@@ -132,6 +132,30 @@ public class PushbulletClient {
 		}
 	}
 	
+	public void sendList(String iden, String title, String... list) {
+		HttpPost post = new HttpPost("https://api.pushbullet.com/api/pushes");
+		try {
+			List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
+			nameValuePairs.add(new BasicNameValuePair("type", "list"));
+			nameValuePairs.add(new BasicNameValuePair("device_iden", iden));
+			nameValuePairs.add(new BasicNameValuePair("title", title));
+			for(String s : list) {
+				nameValuePairs.add(new BasicNameValuePair("items", s));
+			}
+			post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+
+			HttpResponse response = client.execute(post);
+			System.out.println(response.getStatusLine());
+			BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+			String line = "";
+			while ((line = rd.readLine()) != null) {
+				System.out.println(line);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public void sendAddress(String iden, String name, String address) {
 		HttpPost post = new HttpPost("https://api.pushbullet.com/api/pushes");
 		try {
