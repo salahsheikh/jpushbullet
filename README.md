@@ -45,6 +45,15 @@ client.sendFile(device.getDevices().get(n).getIden(), new File("path to file");
 
 //To send links
 client.sendLink(device.getDevices().get(n).getIden(), "title here=", "uhh the url here");
+
+//To send list
+client.sendList(device.getDevices().get(n).getIden(), "title here", ArrayList<String> itemsToPush);
+
+OR if you dont want to create an arraylist, you can insert lots of strings into the parameters instead.
+client.sendList(device.getDevices().get(n).getIden(), "title", "item 1", "item 2", "item 3" ... );
+
+//To send an address
+client.sendAddress(device.getDevices().get(n).getIden(), "name of place", "address");
 ```
 So far it only supports files, notes, and urls. Working on the rest when I can. In the meanwhile, you can help with this project. 
 
