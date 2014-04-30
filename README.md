@@ -23,25 +23,29 @@ This creates the connection to Pushbullet's REST API and supplies the api_key us
 
 To identify user devices, you need to get the devices. 
 ```
-		try {
-			PushbulletDevice devices = client.getDevices();
-		} catch (IllegalStateException | IOException e) {
-			e.printStackTrace();
-		}
+try {
+	PushbulletDevice devices = client.getDevices();
+} catch (IllegalStateException | IOException e) {
+	e.printStackTrace();
+}
 ```
 This method is absolutely vital to use this library as you need device identification keys to send things via Pushbullet. 
 
-Finally, onto the real meat of things, *How to send things via jpushbullet*
+Finally, onto the real meat of things, 
+> *How to send things via jpushbullet*
 
 ```
+//where n is the device id as ordered by the list. 
+
 //To send notes:
-client.sendNote(client.getDevices().getDevices().get(0).getIden(), "SUPER TITLE YO", "JPUSHBULLET ROCKS!");
+client.sendNote(device.getDevices().get(n).getIden(), "SUPER TITLE YO", "JPUSHBULLET ROCKS!");
 
 //To send files
-client.sendFile(client.getDevices().getDevices().get(0).getIden(), new File("path to file");
+client.sendFile(device.getDevices().get(n).getIden(), new File("path to file");
 
 //To send links
-client.sendLink(client.getDevices().getDevices().get(0).getIden(), "title here yo", "uhh the url here");
+client.sendLink(device.getDevices().get(n).getIden(), "title here=", "uhh the url here");
 ```
+So far it only supports files, notes, and urls. Working on the rest when I can. In the meanwhile, you can help with this project. 
 
 Thank you for using this! If you do. Maybe put this in your credits perhaps. With a link maybe.
