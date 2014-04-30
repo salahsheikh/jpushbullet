@@ -179,6 +179,12 @@ public class PushbulletClient {
 	}
 	
 	public void sendFile(String iden, File file) throws IllegalStateException, IOException {
+
+		if(file.length() >= 26214400){
+			System.out.println("The file you are trying to upload is too big.");
+			return;
+		}
+
 		HttpPost post = new HttpPost("https://api.pushbullet.com/api/pushes");
 		try {
 			MultipartEntityBuilder builder = MultipartEntityBuilder.create(); 
