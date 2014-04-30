@@ -58,8 +58,9 @@ public class PushbulletClient {
 			}
 		} finally {
 			response.close();
-			return gson.fromJson(result.toString(), PushbulletDevice.class);
+			
 		}
+		return gson.fromJson(result.toString(), PushbulletDevice.class);
 	}
 
 	public void sendNote(String iden, String title, String body) {
