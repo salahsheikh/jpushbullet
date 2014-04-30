@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.codec.binary.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -107,14 +108,17 @@ public class PushbulletClient {
 		}
 	}
 	
-	public void sendList(String iden, String title, String list) {
+	public void sendList(String iden, String title, ArrayList<String> list) {
 		HttpPost post = new HttpPost("https://api.pushbullet.com/api/pushes");
+		System.out.println(list.toString());
 		try {
 			List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
-			nameValuePairs.add(new BasicNameValuePair("type", "link"));
+			nameValuePairs.add(new BasicNameValuePair("type", "list"));
 			nameValuePairs.add(new BasicNameValuePair("device_iden", iden));
 			nameValuePairs.add(new BasicNameValuePair("title", title));
-			nameValuePairs.add(new BasicNameValuePair("list", list));
+			for(String s : list) {
+				nameValuePairs.add(new BasicNameValuePair("items", s));
+			}
 			post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
 			HttpResponse response = client.execute(post);
