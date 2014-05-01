@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.codec.binary.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -34,9 +36,13 @@ import com.shakethat.jpushbullet.net.PushbulletDevice;
 
 public class PushbulletClient {
 
-	CredentialsProvider	credsProvider	= new BasicCredentialsProvider();
-	CloseableHttpClient	client;
-	Gson				gson;
+	private CredentialsProvider	credsProvider	= new BasicCredentialsProvider();
+	private CloseableHttpClient	client;
+	private Gson				gson;
+	
+	private String URL = "https://api.pushbullet.com/api";
+	
+	private Log log = LogFactory.getLog(getClass());
 
 	public PushbulletClient(String api_key) {
 		client = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build();
@@ -46,11 +52,11 @@ public class PushbulletClient {
 	}
 
 	public PushbulletDevice getDevices() throws IllegalStateException, IOException {
-		HttpGet httpget = new HttpGet("https://api.pushbullet.com/api/devices");
+		HttpGet httpget = new HttpGet(URL + "/devices");
 		CloseableHttpResponse response = client.execute(httpget);
 		StringBuffer result = new StringBuffer();
 		try {
-			System.out.println(response.getStatusLine());
+			log.info(response.getStatusLine());
 			try (BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
 				for (String line; (line = br.readLine()) != null;) {
 					result.append(line);
@@ -64,8 +70,9 @@ public class PushbulletClient {
 		return gson.fromJson(result.toString(), PushbulletDevice.class);
 	}
 
-	public void sendNote(String iden, String title, String body) {
-		HttpPost post = new HttpPost("https://api.pushbullet.com/api/pushes");
+	public String sendNote(String iden, String title, String body) {
+		HttpPost post = new HttpPost(URL + "/pushes");
+		StringBuffer result = new StringBuffer();
 		try {
 			List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
 			nameValuePairs.add(new BasicNameValuePair("type", "note"));
@@ -75,19 +82,22 @@ public class PushbulletClient {
 			post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
 			HttpResponse response = client.execute(post);
-			System.out.println(response.getStatusLine());
-			BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-			String line = "";
-			while ((line = rd.readLine()) != null) {
-				System.out.println(line);
+			log.info(response.getStatusLine());
+			try (BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
+				for (String line; (line = br.readLine()) != null;) {
+					result.append(line);
+				}
+				br.close();
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error(e);
 		}
+		return result.toString();
 	}
 	
-	public void sendLink(String iden, String title, String url) {
-		HttpPost post = new HttpPost("https://api.pushbullet.com/api/pushes");
+	public String sendLink(String iden, String title, String url) {
+		HttpPost post = new HttpPost(URL + "/pushes");
+		StringBuffer result = new StringBuffer();
 		try {
 			List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
 			nameValuePairs.add(new BasicNameValuePair("type", "link"));
@@ -97,19 +107,22 @@ public class PushbulletClient {
 			post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
 			HttpResponse response = client.execute(post);
-			System.out.println(response.getStatusLine());
-			BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-			String line = "";
-			while ((line = rd.readLine()) != null) {
-				System.out.println(line);
+			log.info(response.getStatusLine());
+			try (BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
+				for (String line; (line = br.readLine()) != null;) {
+					result.append(line);
+				}
+				br.close();
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error(e);
 		}
+		return result.toString();
 	}
 	
-	public void sendList(String iden, String title, ArrayList<String> list) {
-		HttpPost post = new HttpPost("https://api.pushbullet.com/api/pushes");
+	public String sendList(String iden, String title, ArrayList<String> list) {
+		HttpPost post = new HttpPost(URL + "/pushes");
+		StringBuffer result = new StringBuffer();
 		try {
 			List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
 			nameValuePairs.add(new BasicNameValuePair("type", "list"));
@@ -121,19 +134,22 @@ public class PushbulletClient {
 			post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
 			HttpResponse response = client.execute(post);
-			System.out.println(response.getStatusLine());
-			BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-			String line = "";
-			while ((line = rd.readLine()) != null) {
-				System.out.println(line);
+			log.info(response.getStatusLine());
+			try (BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
+				for (String line; (line = br.readLine()) != null;) {
+					result.append(line);
+				}
+				br.close();
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error(e);
 		}
+		return result.toString();
 	}
 	
-	public void sendList(String iden, String title, String... list) {
-		HttpPost post = new HttpPost("https://api.pushbullet.com/api/pushes");
+	public String sendList(String iden, String title, String... list) {
+		HttpPost post = new HttpPost(URL + "/pushes");
+		StringBuffer result = new StringBuffer();
 		try {
 			List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
 			nameValuePairs.add(new BasicNameValuePair("type", "list"));
@@ -145,19 +161,22 @@ public class PushbulletClient {
 			post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
 			HttpResponse response = client.execute(post);
-			System.out.println(response.getStatusLine());
-			BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-			String line = "";
-			while ((line = rd.readLine()) != null) {
-				System.out.println(line);
+			log.info(response.getStatusLine());
+			try (BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
+				for (String line; (line = br.readLine()) != null;) {
+					result.append(line);
+				}
+				br.close();
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error(e);
 		}
+		return result.toString();
 	}
 	
-	public void sendAddress(String iden, String name, String address) {
-		HttpPost post = new HttpPost("https://api.pushbullet.com/api/pushes");
+	public String sendAddress(String iden, String name, String address) {
+		HttpPost post = new HttpPost(URL + "/pushes");
+		StringBuffer result = new StringBuffer();
 		try {
 			List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
 			nameValuePairs.add(new BasicNameValuePair("type", "addess"));
@@ -167,25 +186,27 @@ public class PushbulletClient {
 			post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
 			HttpResponse response = client.execute(post);
-			System.out.println(response.getStatusLine());
-			BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-			String line = "";
-			while ((line = rd.readLine()) != null) {
-				System.out.println(line);
+			log.info(response.getStatusLine());
+			try (BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
+				for (String line; (line = br.readLine()) != null;) {
+					result.append(line);
+				}
+				br.close();
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error(e);
 		}
+		return result.toString();
 	}
 	
-	public void sendFile(String iden, File file) throws IllegalStateException, IOException {
+	public String sendFile(String iden, File file) throws Exception {
 
 		if(file.length() >= 26214400){
-			System.out.println("The file you are trying to upload is too big.");
-			return;
+			throw new Exception("The file you are trying to upload is too big.");
 		}
 
 		HttpPost post = new HttpPost("https://api.pushbullet.com/api/pushes");
+		StringBuffer result = new StringBuffer();
 		try {
 			MultipartEntityBuilder builder = MultipartEntityBuilder.create(); 
 		    builder.addBinaryBody("file", file);
@@ -194,14 +215,16 @@ public class PushbulletClient {
 			post.setEntity(builder.build());
 
 			HttpResponse response = client.execute(post);
-			System.out.println(response.getStatusLine());
-			BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-			String line = "";
-			while ((line = rd.readLine()) != null) {
-				System.out.println(line);
+			log.info(response.getStatusLine());
+			try (BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
+				for (String line; (line = br.readLine()) != null;) {
+					result.append(line);
+				}
+				br.close();
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error("Unable to access file!", e);
 		}
+		return result.toString();
 	}
 }
