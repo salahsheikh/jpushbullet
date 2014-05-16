@@ -29,77 +29,108 @@ import com.shakethat.jpushbullet.net.PushbulletDevice;
 
 /**
  * Controls all connection to the Pushbullet API. Contains all methods to access and send data.
- * @author shakethat
  *
+ * @author shakethat
  */
-public class PushbulletClient {
+public class PushbulletClient{
 
-	/***
+	public class LOG_LEVEL{
+		public static final int INFO = 1;
+		public static final int ERROR = 2;
+	}
+
+	;
+
+	/**
 	 * Carries the api key that verifies with the API
 	 */
-	private CredentialsProvider	credsProvider	= new BasicCredentialsProvider();
-	
+	private CredentialsProvider credsProvider = new BasicCredentialsProvider();
+
 	/**
 	 * Our http client
 	 */
-	private CloseableHttpClient	client;
-	
+	private CloseableHttpClient client;
+
 	/**
 	 * Used for parsing resulting data from the API in JSON
 	 */
-	private Gson				gson;
-	
+	private Gson gson;
+
 	private String URL = "https://api.pushbullet.com/api";
-	
+
 	private Log log = LogFactory.getLog(getClass());
 
 	/**
-	 * Create instances of the http client and other needed things.
+	 * Logging level
+	 */
+	private int log_level;
+
+	/**
+	 * Create instances of the http client and other needed things. No logging done with this constructor
+	 *
 	 * @param api_key The only credential to be passed. Acts as user/password
 	 */
-	public PushbulletClient(String api_key) {
+	public PushbulletClient(String api_key){
 		client = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build();
-		credsProvider.setCredentials(new AuthScope("api.pushbullet.com", 443), new UsernamePasswordCredentials(api_key,
-				null));
+		credsProvider.setCredentials(new AuthScope("api.pushbullet.com", 443), new UsernamePasswordCredentials(api_key, null));
 		gson = new Gson();
+		this.log_level = 0;
+	}
+
+	/**
+	 * Create instances of the http client and other needed things. Also specifies what logging level to use.
+	 *
+	 * @param api_key The only credential to be passed. Acts as user/password
+	 * @param log_level Used to select what level of logging needed.
+	 * Ex: PushbulletClient("", PushbulletClient.LOG_LEVEL.INFO) for only logging information
+	 * or  PushbulletClient("", PushbulletClient.LOG_LEVEL.INFO | PushbulletClient.LOG_LEVEL.ERROR) for logging both info and errors.
+	 */
+	public PushbulletClient(String api_key, int log_level){
+		client = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build();
+		credsProvider.setCredentials(new AuthScope("api.pushbullet.com", 443), new UsernamePasswordCredentials(api_key, null));
+		gson = new Gson();
+		this.log_level = log_level;
 	}
 
 	/**
 	 * Parse all the devices available. This is needed if you want to use it to send any data.
+	 *
 	 * @return PushbulletDevice, a class holding all the devices.
 	 * @throws IllegalStateException
 	 * @throws IOException
 	 */
-	public PushbulletDevice getDevices() throws IllegalStateException, IOException {
+	public PushbulletDevice getDevices() throws IllegalStateException, IOException{
 		HttpGet httpget = new HttpGet(URL + "/devices");
 		CloseableHttpResponse response = client.execute(httpget);
 		StringBuffer result = new StringBuffer();
-		try {
-			log.info(response.getStatusLine());
-			try (BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
-				for (String line; (line = br.readLine()) != null;) {
+		try{
+			if(log_level == 1 || log_level == 3){
+				log.info(response.getStatusLine());
+			}
+			try(BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))){
+				for(String line; (line = br.readLine()) != null; ){
 					result.append(line);
 				}
 				br.close();
 			}
-		} finally {
+		}finally{
 			response.close();
-			
 		}
 		return gson.fromJson(result.toString(), PushbulletDevice.class);
 	}
 
 	/**
 	 * Send a note
-	 * @param iden The device identification code
+	 *
+	 * @param iden  The device identification code
 	 * @param title Title of the note
-	 * @param body Body text of the note
+	 * @param body  Body text of the note
 	 * @return resulting json from the api
 	 */
-	public String sendNote(String iden, String title, String body) {
+	public String sendNote(String iden, String title, String body){
 		HttpPost post = new HttpPost(URL + "/pushes");
 		StringBuffer result = new StringBuffer();
-		try {
+		try{
 			List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
 			nameValuePairs.add(new BasicNameValuePair("type", "note"));
 			nameValuePairs.add(new BasicNameValuePair("device_iden", iden));
@@ -108,30 +139,35 @@ public class PushbulletClient {
 			post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
 			HttpResponse response = client.execute(post);
-			log.info(response.getStatusLine());
-			try (BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
-				for (String line; (line = br.readLine()) != null;) {
+			if(log_level == 1 || log_level == 3){
+				log.info(response.getStatusLine());
+			}
+			try(BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))){
+				for(String line; (line = br.readLine()) != null; ){
 					result.append(line);
 				}
 				br.close();
 			}
-		} catch (IOException e) {
-			log.error(e);
+		}catch(IOException e){
+			if(log_level == 2 || log_level == 3){
+				log.error(e);
+			}
 		}
 		return result.toString();
 	}
-	
+
 	/**
 	 * Send a link
-	 * @param iden Device identification code
+	 *
+	 * @param iden  Device identification code
 	 * @param title Link title
-	 * @param url Url of the link
+	 * @param url   Url of the link
 	 * @return resulting json from api
 	 */
-	public String sendLink(String iden, String title, String url) {
+	public String sendLink(String iden, String title, String url){
 		HttpPost post = new HttpPost(URL + "/pushes");
 		StringBuffer result = new StringBuffer();
-		try {
+		try{
 			List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
 			nameValuePairs.add(new BasicNameValuePair("type", "link"));
 			nameValuePairs.add(new BasicNameValuePair("device_iden", iden));
@@ -140,98 +176,113 @@ public class PushbulletClient {
 			post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
 			HttpResponse response = client.execute(post);
-			log.info(response.getStatusLine());
-			try (BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
-				for (String line; (line = br.readLine()) != null;) {
+			if(log_level == 1 || log_level == 3){
+				log.info(response.getStatusLine());
+			}
+			try(BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))){
+				for(String line; (line = br.readLine()) != null; ){
 					result.append(line);
 				}
 				br.close();
 			}
-		} catch (IOException e) {
-			log.error(e);
+		}catch(IOException e){
+			if(log_level == 2 || log_level == 3){
+				log.error(e);
+			}
 		}
 		return result.toString();
 	}
-	
+
 	/**
 	 * Send a list of items
-	 * @param iden device identification code
+	 *
+	 * @param iden  device identification code
 	 * @param title Title of the list
-	 * @param list ArrayList of items to send
+	 * @param list  ArrayList of items to send
 	 * @return resulting json from api
 	 */
-	public String sendList(String iden, String title, ArrayList<String> list) {
+	public String sendList(String iden, String title, ArrayList<String> list){
 		HttpPost post = new HttpPost(URL + "/pushes");
 		StringBuffer result = new StringBuffer();
-		try {
+		try{
 			List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
 			nameValuePairs.add(new BasicNameValuePair("type", "list"));
 			nameValuePairs.add(new BasicNameValuePair("device_iden", iden));
 			nameValuePairs.add(new BasicNameValuePair("title", title));
-			for(String s : list) {
+			for(String s : list){
 				nameValuePairs.add(new BasicNameValuePair("items", s));
 			}
 			post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
 			HttpResponse response = client.execute(post);
-			log.info(response.getStatusLine());
-			try (BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
-				for (String line; (line = br.readLine()) != null;) {
+			if(log_level == 1 || log_level == 3){
+				log.info(response.getStatusLine());
+			}
+			try(BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))){
+				for(String line; (line = br.readLine()) != null; ){
 					result.append(line);
 				}
 				br.close();
 			}
-		} catch (IOException e) {
-			log.error(e);
+		}catch(IOException e){
+			if(log_level == 2 || log_level == 3){
+				log.error(e);
+			}
 		}
 		return result.toString();
 	}
-	
+
 	/**
-	 * Send a list of items 
-	 * @param iden device identification code
+	 * Send a list of items
+	 *
+	 * @param iden  device identification code
 	 * @param title Title of the list
-	 * @param list Multiple string objects to send
+	 * @param list  Multiple string objects to send
 	 * @return resulting json from api
 	 */
-	public String sendList(String iden, String title, String... list) {
+	public String sendList(String iden, String title, String... list){
 		HttpPost post = new HttpPost(URL + "/pushes");
 		StringBuffer result = new StringBuffer();
-		try {
+		try{
 			List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
 			nameValuePairs.add(new BasicNameValuePair("type", "list"));
 			nameValuePairs.add(new BasicNameValuePair("device_iden", iden));
 			nameValuePairs.add(new BasicNameValuePair("title", title));
-			for(String s : list) {
+			for(String s : list){
 				nameValuePairs.add(new BasicNameValuePair("items", s));
 			}
 			post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
 			HttpResponse response = client.execute(post);
-			log.info(response.getStatusLine());
-			try (BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
-				for (String line; (line = br.readLine()) != null;) {
+			if(log_level == 1 || log_level == 3){
+				log.info(response.getStatusLine());
+			}
+			try(BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))){
+				for(String line; (line = br.readLine()) != null; ){
 					result.append(line);
 				}
 				br.close();
 			}
-		} catch (IOException e) {
-			log.error(e);
+		}catch(IOException e){
+			if(log_level == 2 || log_level == 3){
+				log.error(e);
+			}
 		}
 		return result.toString();
 	}
-	
+
 	/**
 	 * Send an address
-	 * @param iden device identification code
-	 * @param name name of the location
+	 *
+	 * @param iden    device identification code
+	 * @param name    name of the location
 	 * @param address address of the location or google map query
 	 * @return resulting json from api
 	 */
-	public String sendAddress(String iden, String name, String address) {
+	public String sendAddress(String iden, String name, String address){
 		HttpPost post = new HttpPost(URL + "/pushes");
 		StringBuffer result = new StringBuffer();
-		try {
+		try{
 			List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
 			nameValuePairs.add(new BasicNameValuePair("type", "addess"));
 			nameValuePairs.add(new BasicNameValuePair("device_iden", iden));
@@ -240,51 +291,63 @@ public class PushbulletClient {
 			post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
 			HttpResponse response = client.execute(post);
-			log.info(response.getStatusLine());
-			try (BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
-				for (String line; (line = br.readLine()) != null;) {
+			if(log_level == 1 || log_level == 3){
+				log.info(response.getStatusLine());
+			}
+			try(BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))){
+				for(String line; (line = br.readLine()) != null; ){
 					result.append(line);
 				}
 				br.close();
 			}
-		} catch (IOException e) {
-			log.error(e);
+		}catch(IOException e){
+			if(log_level == 2 || log_level == 3){
+				log.error(e);
+			}
 		}
 		return result.toString();
 	}
-	
+
 	/**
 	 * Send a file
+	 *
 	 * @param iden Device identification code
 	 * @param file the file to send
 	 * @return resulting json from api
 	 * @throws Exception Any exception that were to occur
 	 */
-	public String sendFile(String iden, File file) throws Exception {
+	public String sendFile(String iden, File file) throws Exception{
 
 		if(file.length() >= 26214400){
+			if(log_level == 2 || log_level == 3){
+				log.error("The file you are trying to upload is too big. File: " + file.getName() + " Size: " + file.length());
+			}
 			throw new Exception("The file you are trying to upload is too big.");
 		}
 
 		HttpPost post = new HttpPost(URL + "/pushes");
 		StringBuffer result = new StringBuffer();
-		try {
-			MultipartEntityBuilder builder = MultipartEntityBuilder.create(); 
-		    builder.addBinaryBody("file", file);
-		    builder.addTextBody("device_iden", iden);
-		    builder.addTextBody("type", "file");
+		try{
+			MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+			builder.addBinaryBody("file", file);
+			builder.addTextBody("device_iden", iden);
+			builder.addTextBody("type", "file");
 			post.setEntity(builder.build());
 
 			HttpResponse response = client.execute(post);
-			log.info(response.getStatusLine());
-			try (BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
-				for (String line; (line = br.readLine()) != null;) {
+			if(log_level == 1 || log_level == 3){
+				log.info(response.getStatusLine());
+			}
+			try(BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))){
+				for(String line; (line = br.readLine()) != null; ){
 					result.append(line);
 				}
 				br.close();
 			}
-		} catch (IOException e) {
-			log.error("Unable to access file!", e);
+		}catch(IOException e){
+			if(log_level == 2 || log_level == 3){
+				log.error("Unable to access file!", e);
+			}
 		}
 		return result.toString();
 	}
