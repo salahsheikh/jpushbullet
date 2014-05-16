@@ -55,6 +55,5 @@ client.sendList(devices.getDevices().get(n).getIden(), "title", "item 1", "item 
 //To send an address
 client.sendAddress(devices.getDevices().get(n).getIden(), "name of place", "address");
 ```
-So far it only supports files, notes, and urls. Working on the rest when I can. In the meanwhile, you can help with this project. 
 
 Thank you for using this! If you do. Maybe put this in your credits perhaps. With a link maybe.
