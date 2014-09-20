@@ -5,7 +5,7 @@ import java.util.List;
 
 public class Extras{
    	private String android_version;
-   	private Number app_version;
+   	private String app_version;
    	private String manufacturer;
    	private String model;
    	private String sdk_version;
@@ -16,10 +16,10 @@ public class Extras{
 	public void setAndroid_version(String android_version){
 		this.android_version = android_version;
 	}
- 	public Number getApp_version(){
+ 	public String getApp_version(){
 		return this.app_version;
 	}
-	public void setApp_version(Number app_version){
+	public void setApp_version(String app_version){
 		this.app_version = app_version;
 	}
  	public String getManufacturer(){
