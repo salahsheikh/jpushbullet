@@ -142,7 +142,7 @@ public class PushbulletClient {
             nameValuePairs.add(new BasicNameValuePair(device ? "device_iden" : "email", iden));
             nameValuePairs.add(new BasicNameValuePair("title", title));
             nameValuePairs.add(new BasicNameValuePair("body", body));
-            post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+            post.setEntity(new UrlEncodedFormEntity(nameValuePairs, "UTF-8"));
 
             HttpResponse response = client.execute(post);
             if (log_level == 1 || log_level == 3) {
@@ -179,7 +179,7 @@ public class PushbulletClient {
             nameValuePairs.add(new BasicNameValuePair(device ? "device_iden" : "email", iden));
             nameValuePairs.add(new BasicNameValuePair("title", title));
             nameValuePairs.add(new BasicNameValuePair("url", url));
-            post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+            post.setEntity(new UrlEncodedFormEntity(nameValuePairs, "UTF-8"));
 
             HttpResponse response = client.execute(post);
             if (log_level == 1 || log_level == 3) {
@@ -218,7 +218,7 @@ public class PushbulletClient {
             for (String s : list) {
                 nameValuePairs.add(new BasicNameValuePair("items", s));
             }
-            post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+            post.setEntity(new UrlEncodedFormEntity(nameValuePairs, "UTF-8"));
 
             HttpResponse response = client.execute(post);
             if (log_level == 1 || log_level == 3) {
@@ -257,7 +257,7 @@ public class PushbulletClient {
             for (String s : list) {
                 nameValuePairs.add(new BasicNameValuePair("items", s));
             }
-            post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+            post.setEntity(new UrlEncodedFormEntity(nameValuePairs, "UTF-8"));
 
             HttpResponse response = client.execute(post);
             if (log_level == 1 || log_level == 3) {
@@ -294,7 +294,7 @@ public class PushbulletClient {
             nameValuePairs.add(new BasicNameValuePair(device ? "device_iden" : "email", iden));
             nameValuePairs.add(new BasicNameValuePair("name", name));
             nameValuePairs.add(new BasicNameValuePair("address", address));
-            post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+            post.setEntity(new UrlEncodedFormEntity(nameValuePairs, "UTF-8"));
 
             HttpResponse response = client.execute(post);
             if (log_level == 1 || log_level == 3) {
