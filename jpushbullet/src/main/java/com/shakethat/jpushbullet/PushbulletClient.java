@@ -102,12 +102,12 @@ public class PushbulletClient {
                 br.close();
             }
         }
-        System.out.println(result.toString());
+        //System.out.println(result.toString());
         return gson.fromJson(result.toString(), PushbulletDevice.class);
     }
 
     public PushList getPushes(long modified) throws IOException {
-        HttpGet get = new HttpGet(URL + "/pushes?modified_after=" + modified);
+        HttpGet get = new HttpGet(URL + "/pushes?modified_after=" + Long.toString(modified));
         StringBuilder result = new StringBuilder();
         try (CloseableHttpResponse response = client.execute(get)) {
             if (log_level == 1 || log_level == 3) {
@@ -127,10 +127,10 @@ public class PushbulletClient {
     /**
      * Send a note
      *
-     * @param iden   The device identification code
+     * @param device Sending to a device or email
+     * @param iden   The device identification code or email address if device is true
      * @param title  Title of the note
      * @param body   Body text of the note
-     * @param device Sending to a device or email
      * @return resulting json from the api
      */
     public String sendNote(boolean device, String iden, String title, String body) {
@@ -165,7 +165,8 @@ public class PushbulletClient {
     /**
      * Send a link
      *
-     * @param iden  Device identification code
+     * @param device Sending to a device or email
+     * @param iden   The device identification code or email address if device is true
      * @param title Link title
      * @param url   Url of the link
      * @return resulting json from api
@@ -202,7 +203,8 @@ public class PushbulletClient {
     /**
      * Send a list of items
      *
-     * @param iden  device identification code
+     * @param device Sending to a device or email
+     * @param iden   The device identification code or email address if device is truev
      * @param title Title of the list
      * @param list  ArrayList of items to send
      * @return resulting json from api
@@ -241,7 +243,8 @@ public class PushbulletClient {
     /**
      * Send a list of items
      *
-     * @param iden  device identification code
+     * @param device Sending to a device or email
+     * @param iden   The device identification code or email address if device is true
      * @param title Title of the list
      * @param list  Multiple string objects to send
      * @return resulting json from api
@@ -280,7 +283,8 @@ public class PushbulletClient {
     /**
      * Send an address
      *
-     * @param iden    device identification code
+     * @param device Sending to a device or email
+     * @param iden   The device identification code or email address if device is true
      * @param name    name of the location
      * @param address address of the location or google map query
      * @return resulting json from api
@@ -317,7 +321,8 @@ public class PushbulletClient {
     /**
      * Send a file
      *
-     * @param iden Device identification code
+     * @param device Sending to a device or email
+     * @param iden   The device identification code or email address if device is true
      * @param file the file to send
      * @return resulting json from api
      * @throws Exception Any exception that were to occur

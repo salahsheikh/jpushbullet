@@ -2,9 +2,6 @@ package com.shakethat.jpushbullet.net;
 
 import java.util.List;
 
-/**
- * Created by Goat on 9/14/2014.
- */
 public class PushList {
 
     private List<Push> pushes;
@@ -13,7 +10,4 @@ public class PushList {
         return pushes;
     }
 
-    public void setPushes(List<Push> pushes) {
-        this.pushes = pushes;
-    }
 }
