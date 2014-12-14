@@ -1,3 +1,5 @@
+##Urgent: I will be adding support for the changes in Pushbullet's APIs soon. :)
+
 jpushbullet
 ===========
 
