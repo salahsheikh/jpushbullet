@@ -19,7 +19,6 @@ package com.shakethat.jpushbullet.net;
  * "receiver_email": "ryan@pushbullet.com",
  * "receiver_email_normalized": "ryan@pushbullet.com"
  * }
- * Created by Goat on 9/14/2014.
  */
 public class Push {
 

@@ -1,31 +1,72 @@
 package com.shakethat.jpushbullet.net;
 
-public class Devices {
-    private Extras extras;
-    private Number id;
-    private String iden;
+public class Devices{
 
-    public Extras getExtras() {
-        return this.extras;
-    }
+	private boolean active;
+	private boolean pushable;
+	private Number created;
+	private Number modified;
+	private Number app_version;
+	private String iden;
+	private String nickname;
+	private String type;
+	private String kind;
+	private String manufacturer;
+	private String model;
+	private String fingerprint;
+	private String push_token;
 
-    public void setExtras(Extras extras) {
-        this.extras = extras;
-    }
+	public Number getApp_version(){
+		return app_version;
+	}
 
-    public Number getId() {
-        return this.id;
-    }
+	public boolean isActive(){
+		return active;
+	}
 
-    public void setId(Number id) {
-        this.id = id;
-    }
+	public boolean isPushable(){
+		return pushable;
+	}
 
-    public String getIden() {
-        return this.iden;
-    }
+	public Number getModified(){
+		return modified;
+	}
 
-    public void setIden(String iden) {
-        this.iden = iden;
-    }
+	public Number getCreated(){
+		return created;
+	}
+
+	public String getNickname(){
+		return nickname;
+	}
+
+
+	public String getType(){
+		return type;
+	}
+
+	public String getKind(){
+		return kind;
+	}
+
+	public String getManufacturer(){
+		return manufacturer;
+	}
+
+	public String getModel(){
+		return model;
+	}
+
+	public String getFingerprint(){
+		return fingerprint;
+	}
+
+	public String getPush_token(){
+		return push_token;
+	}
+
+	public String getIden(){
+		return this.iden;
+	}
+
 }
