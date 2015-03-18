@@ -1,4 +1,4 @@
-##Urgent: I will be adding support for the changes in Pushbullet's APIs soon. :)
+#This library is now deprecated. All further commits from my will be for maintainence and bug-eliminating purposes only. You are still free to contribute to this project, however. Use "iharders"  [library](http://iharder.sourceforge.net/current/java/jpushbullet2/) which supports the newer API.
 
 jpushbullet
 ===========
