@@ -201,6 +201,45 @@ public class PushbulletClient {
     }
 
     /**
+     * Send a link
+     *
+     * @param iden  Device identification code
+     * @param title Link title
+     * @param body Body text of the link
+     * @param url   Url of the link
+     * @return resulting json from api
+     */
+    public String sendLink(boolean device, String iden, String title, String body, String url) {
+        HttpPost post = new HttpPost(URL + "/pushes");
+        StringBuilder result = new StringBuilder();
+        try {
+            List<NameValuePair> nameValuePairs = new ArrayList<>(1);
+            nameValuePairs.add(new BasicNameValuePair("type", "link"));
+            nameValuePairs.add(new BasicNameValuePair(device ? "device_iden" : "email", iden));
+            nameValuePairs.add(new BasicNameValuePair("title", title));
+            nameValuePairs.add(new BasicNameValuePair("body", body));
+            nameValuePairs.add(new BasicNameValuePair("url", url));
+            post.setEntity(new UrlEncodedFormEntity(nameValuePairs, "UTF-8"));
+
+            HttpResponse response = client.execute(post);
+            if (log_level == 1 || log_level == 3) {
+                log.info(response.getStatusLine());
+            }
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
+                for (String line; (line = br.readLine()) != null; ) {
+                    result.append(line);
+                }
+                br.close();
+            }
+        } catch (IOException e) {
+            if (log_level == 2 || log_level == 3) {
+                log.error(e);
+            }
+        }
+        return result.toString();
+    }
+
+    /**
      * Send a list of items
      *
      * @param device Sending to a device or email
