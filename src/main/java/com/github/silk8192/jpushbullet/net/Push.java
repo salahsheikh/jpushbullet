@@ -1,25 +1,5 @@
-package com.shakethat.jpushbullet.net;
+package com.github.silk8192.jpushbullet.net;
 
-/**
- * {
- * "iden": "ubdpjAkaGXvUl2",
- * "type": "link",
- * "active": true,
- * "dismissed": false,
- * "created": 1.39934925E9,
- * "modified": 1.39934925E9,
- * "title": "Pushbullet",
- * "body": "Documenting our API",
- * "url": "http://docs.pushbullet.com",
- * "target_device_iden": "ubddjAy95rgBxc",
- * "sender_iden": "ubd",
- * "sender_email": "ryan@pushbullet.com",
- * "sender_email_normalized": "ryan@pushbullet.com",
- * "receiver_iden": "ubd",
- * "receiver_email": "ryan@pushbullet.com",
- * "receiver_email_normalized": "ryan@pushbullet.com"
- * }
- */
 public class Push {
 
     private String iden;

@@ -1,8 +1,10 @@
-package com.shakethat.jpushbullet;
+package com.github.silk8192.jpushbullet;
 
+import com.github.silk8192.jpushbullet.net.Devices;
+import com.github.silk8192.jpushbullet.net.Push;
+import com.github.silk8192.jpushbullet.net.PushList;
+import com.github.silk8192.jpushbullet.net.PushbulletDevice;
 import com.google.gson.Gson;
-import com.shakethat.jpushbullet.net.PushList;
-import com.shakethat.jpushbullet.net.PushbulletDevice;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpResponse;
@@ -26,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Controls all connection to the Pushbullet API. Contains all methods to access and send data.
@@ -71,8 +74,8 @@ public class PushbulletClient {
      *
      * @param api_key   The only credential to be passed. Acts as user/password
      * @param log_level Used to select what level of logging needed.
-     *                  Ex: PushbulletClient("", PushbulletClient.LOG_LEVEL.INFO) for only logging information
-     *                  or  PushbulletClient("", PushbulletClient.LOG_LEVEL.INFO | PushbulletClient.LOG_LEVEL.ERROR) for logging both info and errors.
+     *                  Ex: PushbulletClient(api_key, PushbulletClient.LOG_LEVEL.INFO) for only logging information
+     *                  or  PushbulletClient(api_key, PushbulletClient.LOG_LEVEL.INFO | PushbulletClient.LOG_LEVEL.ERROR) for logging both info and errors.
      */
     public PushbulletClient(String api_key, int log_level) {
         client = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build();
@@ -88,40 +91,30 @@ public class PushbulletClient {
      * @throws IllegalStateException
      * @throws IOException
      */
-    public PushbulletDevice getDevices() throws IllegalStateException, IOException {
+    public List<Devices> getDevices() {
         HttpGet httpget = new HttpGet(URL + "/devices");
-        StringBuilder result = new StringBuilder();
+        String result = null;
         try (CloseableHttpResponse response = client.execute(httpget)) {
             if (log_level == 1 || log_level == 3) {
                 log.info(response.getStatusLine());
             }
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
-                for (String line; (line = br.readLine()) != null; ) {
-                    result.append(line);
-                }
-                br.close();
-            }
+            result = collectResponse(response);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        //System.out.println(result.toString());
-        return gson.fromJson(result.toString(), PushbulletDevice.class);
+        return gson.fromJson(result.toString(), PushbulletDevice.class).getDevices();
     }
 
-    public PushList getPushes(long modified) throws IOException {
+    public List<Push> getPushes(long modified) throws IOException {
         HttpGet get = new HttpGet(URL + "/pushes?modified_after=" + Long.toString(modified));
-        StringBuilder result = new StringBuilder();
+        String result;
         try (CloseableHttpResponse response = client.execute(get)) {
             if (log_level == 1 || log_level == 3) {
                 log.info(response.getStatusLine());
             }
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
-                for (String line; (line = br.readLine()) != null; ) {
-                    result.append(line);
-                }
-                br.close();
-            }
+            result = collectResponse(response);
         }
-        //System.out.println(result);
-        return gson.fromJson(result.toString(), PushList.class);
+        return gson.fromJson(result, PushList.class).getPushes();
     }
 
     /**
@@ -167,8 +160,8 @@ public class PushbulletClient {
      *
      * @param device Sending to a device or email
      * @param iden   The device identification code or email address if device is true
-     * @param title Link title
-     * @param url   Url of the link
+     * @param title  Link title
+     * @param url    Url of the link
      * @return resulting json from api
      */
     public String sendLink(boolean device, String iden, String title, String url) {
@@ -205,7 +198,7 @@ public class PushbulletClient {
      *
      * @param iden  Device identification code
      * @param title Link title
-     * @param body Body text of the link
+     * @param body  Body text of the link
      * @param url   Url of the link
      * @return resulting json from api
      */
@@ -244,15 +237,15 @@ public class PushbulletClient {
      *
      * @param device Sending to a device or email
      * @param iden   The device identification code or email address if device is truev
-     * @param title Title of the list
-     * @param list  ArrayList of items to send
+     * @param title  Title of the list
+     * @param list   ArrayList of items to send
      * @return resulting json from api
      */
     public String sendList(boolean device, String iden, String title, ArrayList<String> list) {
         HttpPost post = new HttpPost(URL + "/pushes");
-        StringBuilder result = new StringBuilder();
+        String result = null;
         try {
-            List<NameValuePair> nameValuePairs = new ArrayList<>(1);
+            List<NameValuePair> nameValuePairs = new ArrayList<>();
             nameValuePairs.add(new BasicNameValuePair("type", "list"));
             nameValuePairs.add(new BasicNameValuePair(device ? "device_iden" : "email", iden));
             nameValuePairs.add(new BasicNameValuePair("title", title));
@@ -265,18 +258,13 @@ public class PushbulletClient {
             if (log_level == 1 || log_level == 3) {
                 log.info(response.getStatusLine());
             }
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
-                for (String line; (line = br.readLine()) != null; ) {
-                    result.append(line);
-                }
-                br.close();
-            }
+            result = collectResponse(response);
         } catch (IOException e) {
             if (log_level == 2 || log_level == 3) {
                 log.error(e);
             }
         }
-        return result.toString();
+        return result;
     }
 
     /**
@@ -284,13 +272,13 @@ public class PushbulletClient {
      *
      * @param device Sending to a device or email
      * @param iden   The device identification code or email address if device is true
-     * @param title Title of the list
-     * @param list  Multiple string objects to send
+     * @param title  Title of the list
+     * @param list   Multiple string objects to send
      * @return resulting json from api
      */
     public String sendList(boolean device, String iden, String title, String... list) {
         HttpPost post = new HttpPost(URL + "/pushes");
-        StringBuilder result = new StringBuilder();
+        Optional<HttpResponse> response = Optional.empty();
         try {
             List<NameValuePair> nameValuePairs = new ArrayList<>(1);
             nameValuePairs.add(new BasicNameValuePair("type", "list"));
@@ -301,60 +289,47 @@ public class PushbulletClient {
             }
             post.setEntity(new UrlEncodedFormEntity(nameValuePairs, "UTF-8"));
 
-            HttpResponse response = client.execute(post);
+            response = Optional.of(client.execute(post));
             if (log_level == 1 || log_level == 3) {
-                log.info(response.getStatusLine());
-            }
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
-                for (String line; (line = br.readLine()) != null; ) {
-                    result.append(line);
-                }
-                br.close();
+                log.info(response.get().getStatusLine());
             }
         } catch (IOException e) {
             if (log_level == 2 || log_level == 3) {
                 log.error(e);
             }
         }
-        return result.toString();
+        return collectResponse(response.get());
     }
 
     /**
      * Send an address
      *
-     * @param device Sending to a device or email
-     * @param iden   The device identification code or email address if device is true
+     * @param device  Sending to a device or email
+     * @param iden    The device identification code or email address if device is true
      * @param name    name of the location
      * @param address address of the location or google map query
      * @return resulting json from api
      */
     public String sendAddress(boolean device, String iden, String name, String address) {
         HttpPost post = new HttpPost(URL + "/pushes");
-        StringBuilder result = new StringBuilder();
+        HttpResponse response = null;
+        List<NameValuePair> nameValuePairs = new ArrayList<>(1);
+        nameValuePairs.add(new BasicNameValuePair("type", "addess"));
+        nameValuePairs.add(new BasicNameValuePair(device ? "device_iden" : "email", iden));
+        nameValuePairs.add(new BasicNameValuePair("name", name));
+        nameValuePairs.add(new BasicNameValuePair("address", address));
         try {
-            List<NameValuePair> nameValuePairs = new ArrayList<>(1);
-            nameValuePairs.add(new BasicNameValuePair("type", "addess"));
-            nameValuePairs.add(new BasicNameValuePair(device ? "device_iden" : "email", iden));
-            nameValuePairs.add(new BasicNameValuePair("name", name));
-            nameValuePairs.add(new BasicNameValuePair("address", address));
             post.setEntity(new UrlEncodedFormEntity(nameValuePairs, "UTF-8"));
-
-            HttpResponse response = client.execute(post);
+            response = client.execute(post);
             if (log_level == 1 || log_level == 3) {
                 log.info(response.getStatusLine());
             }
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
-                for (String line; (line = br.readLine()) != null; ) {
-                    result.append(line);
-                }
-                br.close();
-            }
-        } catch (IOException e) {
+        } catch (Exception e) {
             if (log_level == 2 || log_level == 3) {
                 log.error(e);
             }
         }
-        return result.toString();
+        return collectResponse(response);
     }
 
     /**
@@ -362,7 +337,7 @@ public class PushbulletClient {
      *
      * @param device Sending to a device or email
      * @param iden   The device identification code or email address if device is true
-     * @param file the file to send
+     * @param file   the file to send
      * @return resulting json from api
      * @throws Exception Any exception that were to occur
      */
@@ -376,7 +351,7 @@ public class PushbulletClient {
         }
 
         HttpPost post = new HttpPost(URL + "/pushes");
-        StringBuilder result = new StringBuilder();
+        HttpResponse response = null;
         try {
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
             builder.addBinaryBody("file", file);
@@ -384,20 +359,27 @@ public class PushbulletClient {
             builder.addTextBody("type", "file");
             post.setEntity(builder.build());
 
-            HttpResponse response = client.execute(post);
+            response = client.execute(post);
             if (log_level == 1 || log_level == 3) {
                 log.info(response.getStatusLine());
-            }
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
-                for (String line; (line = br.readLine()) != null; ) {
-                    result.append(line);
-                }
-                br.close();
             }
         } catch (IOException e) {
             if (log_level == 2 || log_level == 3) {
                 log.error("Unable to access file!", e);
             }
+        }
+        return collectResponse(response);
+    }
+
+    private String collectResponse(HttpResponse response) {
+        StringBuilder result = new StringBuilder();
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
+            for (String line; (line = br.readLine()) != null; ) {
+                result.append(line);
+            }
+            br.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         return result.toString();
     }

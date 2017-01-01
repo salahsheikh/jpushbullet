@@ -1,5 +1,5 @@
 
-package com.shakethat.jpushbullet.net;
+package com.github.silk8192.jpushbullet.net;
 
 import java.util.List;
 
