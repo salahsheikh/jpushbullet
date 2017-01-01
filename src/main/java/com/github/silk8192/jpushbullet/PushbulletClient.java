@@ -34,6 +34,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Controls all connection to the Pushbullet API. Contains all methods to access and send data.
@@ -53,6 +55,8 @@ public class PushbulletClient {
     private String URL = "https://api.pushbullet.com/v2";
     private Logger logger = LogManager.getLogger();
 
+    private List<Device> devices;
+
     /**
      * Create instances of the http client and other needed things. Also specifies what logging level to use.
      *
@@ -61,9 +65,10 @@ public class PushbulletClient {
     public PushbulletClient(String api_key) {
         // Carries the api key that verifies with the API
         CredentialsProvider credsProvider = new BasicCredentialsProvider();
-        client = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build();
         credsProvider.setCredentials(new AuthScope("api.pushbullet.com", 443), new UsernamePasswordCredentials(api_key, null));
-        gson = new Gson();
+        this.client = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build();
+        this.gson = new Gson();
+        this.devices = listDevices();
     }
 
     public List<Device> listDevices() {
@@ -220,7 +225,12 @@ public class PushbulletClient {
     }
 
     public Device getDevice(int id) {
-        return this.listDevices().get(id);
+        return this.devices.get(id);
+    }
+
+    public Device getDeviceByIden(String iden) {
+        Optional<Device> device = this.devices.stream().filter(d -> d.getIden().equals(iden)).filter(Objects::nonNull).findFirst();
+        return device.get();
     }
 
 }
