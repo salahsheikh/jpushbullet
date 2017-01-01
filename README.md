@@ -1,13 +1,21 @@
 jpushbullet
 ===========
 
-A simple Java library to interface/use/access Pushbullet's API. 
+A simple library to interface/use/access the Pushbullet API (v2) written with Java 8.
+Current feature set:
+
+#### Chat: list, create, update, delete. 
+#### Device: list, create, update, delete.
+#### Push: list, create, update, delete, delete all
+#### Subscriptions: list, create, update, get channel info
+#### User: get current user info
 
 Dependencies:
 =============
-* [Apache's HttpClient library for GET/POST requests.](http://hc.apache.org/httpcomponents-client-ga/)
-* [Google's gson library for parsing data from Pushbullet](https://code.google.com/p/google-gson/)
-* [Apache Commons Logging (HttpClient needs it)](http://commons.apache.org/proper/commons-logging/)
+* [Apache HttpClient library](http://hc.apache.org/httpcomponents-client-ga/)
+* [Google gson library](https://code.google.com/p/google-gson/)
+* [Apache Commons Logging](http://commons.apache.org/proper/commons-logging/)
+* Log4j Library
 
 How to use:
 ===========
@@ -31,22 +39,10 @@ PushbulletDevice devices = client.getDevices();
 //where n is the device id as ordered by the list. 
 
 //To send notes:
-client.sendNote(devices.getDevices().get(n).getIden(), "SUPER TITLE YO", "JPUSHBULLET ROCKS!");
-
-//To send files
-client.sendFile(devices.getDevices().get(n).getIden(), new File("path to file");
+client.sendNotePush(title, body);
 
 //To send links
-client.sendLink(devices.getDevices().get(n).getIden(), "title here=", "uhh the url here");
-
-//To send list
-client.sendList(devices.getDevices().get(n).getIden(), "title here", ArrayList<String> itemsToPush);
-
-OR if you dont want to create an arraylist, you can insert lots of strings into the parameters instead.
-client.sendList(devices.getDevices().get(n).getIden(), "title", "item 1", "item 2", "item 3" ... );
-
-//To send an address
-client.sendAddress(devices.getDevices().get(n).getIden(), "name of place", "address");
+client.sendLinkPush(title, body, link);
 ```
 
-Thank you for using this! If you do. Maybe put this in your credits perhaps. With a link maybe.
+Thank you for using this!

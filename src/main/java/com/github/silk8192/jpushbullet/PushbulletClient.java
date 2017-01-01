@@ -129,20 +129,41 @@ public class PushbulletClient {
     }
 
     public Push sendNotePush(String title, String body) {
-        List<NameValuePair> nameValuePairs = new ArrayList<>();
-        nameValuePairs.add(new BasicNameValuePair("type", "note"));
-        nameValuePairs.add(new BasicNameValuePair("title", title));
-        nameValuePairs.add(new BasicNameValuePair("body", body));
-        return gson.fromJson(post(URL + "/pushes", nameValuePairs), Push.class);
+        try {
+            return sendPush("note", title, body, "", "", "", "", "", "", "", "", "", "");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public Push sendLinkPush(String title, String body, String link) {
+        try {
+            return sendPush("link", title, body, link, "", "", "", "", "", "", "", "", "");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Push sendPush(String type, String title, String body, String url,
+                         String file_name, String file_type, String file_url,
+                         String source_device_iden, String device_iden,
+                         String client_iden, String channel_tag, String email, String guid) throws Exception {
         List<NameValuePair> nameValuePairs = new ArrayList<>();
-        nameValuePairs.add(new BasicNameValuePair("type", "link"));
-        nameValuePairs.add(new BasicNameValuePair("title", title));
-        nameValuePairs.add(new BasicNameValuePair("body", body));
-        nameValuePairs.add(new BasicNameValuePair("url", link));
-        return gson.fromJson(post(URL + "/pushes", nameValuePairs), Push.class);
+        if(type.equals("link")) {
+            nameValuePairs.add(new BasicNameValuePair("title", title));
+            nameValuePairs.add(new BasicNameValuePair("body", body));
+            nameValuePairs.add(new BasicNameValuePair("url", url));
+            return gson.fromJson(post(URL + "/pushes", nameValuePairs), Push.class);
+        } else if(type.equals("note")) {
+            nameValuePairs.add(new BasicNameValuePair("type", "note"));
+            nameValuePairs.add(new BasicNameValuePair("title", title));
+            nameValuePairs.add(new BasicNameValuePair("body", body));
+            return gson.fromJson(post(URL + "/pushes", nameValuePairs), Push.class);
+        } else {
+            throw new Exception("Invalid push type!");
+        }
     }
 
     public Push sendFilePush(String body, String fileName, String fileType) {
