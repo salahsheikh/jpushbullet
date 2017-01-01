@@ -1,5 +1,3 @@
-> This library is now deprecated. All further commits from my will be for maintainence and bug-eliminating purposes only. You are still free to contribute to this project, however. Use "iharders"  [library](http://iharder.sourceforge.net/current/java/jpushbullet2/) which supports the newer API.
-
 jpushbullet
 ===========
 
@@ -7,7 +5,6 @@ A simple Java library to interface/use/access Pushbullet's API.
 
 Dependencies:
 =============
-To use the jpushbullet library, you require the following libraries:
 * [Apache's HttpClient library for GET/POST requests.](http://hc.apache.org/httpcomponents-client-ga/)
 * [Google's gson library for parsing data from Pushbullet](https://code.google.com/p/google-gson/)
 * [Apache Commons Logging (HttpClient needs it)](http://commons.apache.org/proper/commons-logging/)
@@ -23,17 +20,11 @@ PushbulletClient client = new PushbulletClient(api_key);
 
 This creates the connection to Pushbullet's REST API and supplies the api_key used to identify users (as passed into the constructor). FYI, you can get the api key from https://www.pushbullet.com/account when logged in.
 
-To identify user devices, you need to get the devices. 
+To get devices:
 ```
-try {
-	PushbulletDevice devices = client.getDevices();
-} catch (IllegalStateException | IOException e) {
-	e.printStackTrace();
-}
+PushbulletDevice devices = client.getDevices();
 ```
-This method is absolutely vital to use this library as you need device identification keys to send things via Pushbullet. 
 
-Finally, onto the real meat of things, 
 > *How to send things via jpushbullet*
 
 ```

@@ -21,6 +21,8 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -51,7 +53,7 @@ public class PushbulletClient {
      */
     private Gson gson;
     private String URL = "https://api.pushbullet.com/v2";
-    private Log log = LogFactory.getLog(getClass());
+    private Logger logger = LogManager.getLogger();
     /**
      * Logging level
      */
@@ -67,6 +69,7 @@ public class PushbulletClient {
         credsProvider.setCredentials(new AuthScope("api.pushbullet.com", 443), new UsernamePasswordCredentials(api_key, null));
         gson = new Gson();
         this.log_level = 0;
+        getDevices();
     }
 
     /**
@@ -96,7 +99,7 @@ public class PushbulletClient {
         String result = null;
         try (CloseableHttpResponse response = client.execute(httpget)) {
             if (log_level == 1 || log_level == 3) {
-                log.info(response.getStatusLine());
+                logger.info(response.getStatusLine());
             }
             result = collectResponse(response);
         } catch (IOException e) {
@@ -109,9 +112,7 @@ public class PushbulletClient {
         HttpGet get = new HttpGet(URL + "/pushes?modified_after=" + Long.toString(modified));
         String result;
         try (CloseableHttpResponse response = client.execute(get)) {
-            if (log_level == 1 || log_level == 3) {
-                log.info(response.getStatusLine());
-            }
+            logger.info(response.getStatusLine());
             result = collectResponse(response);
         }
         return gson.fromJson(result, PushList.class).getPushes();
@@ -138,9 +139,7 @@ public class PushbulletClient {
             post.setEntity(new UrlEncodedFormEntity(nameValuePairs, "UTF-8"));
 
             HttpResponse response = client.execute(post);
-            if (log_level == 1 || log_level == 3) {
-                log.info(response.getStatusLine());
-            }
+            logger.info(response.getStatusLine());
             try (BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
                 for (String line; (line = br.readLine()) != null; ) {
                     result.append(line);
@@ -148,9 +147,7 @@ public class PushbulletClient {
                 br.close();
             }
         } catch (IOException e) {
-            if (log_level == 2 || log_level == 3) {
-                log.error(e);
-            }
+            logger.catching(e);
         }
         return result.toString();
     }
@@ -176,9 +173,8 @@ public class PushbulletClient {
             post.setEntity(new UrlEncodedFormEntity(nameValuePairs, "UTF-8"));
 
             HttpResponse response = client.execute(post);
-            if (log_level == 1 || log_level == 3) {
-                log.info(response.getStatusLine());
-            }
+
+            logger.info(response.getStatusLine());
             try (BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
                 for (String line; (line = br.readLine()) != null; ) {
                     result.append(line);
@@ -186,9 +182,7 @@ public class PushbulletClient {
                 br.close();
             }
         } catch (IOException e) {
-            if (log_level == 2 || log_level == 3) {
-                log.error(e);
-            }
+            logger.catching(e);
         }
         return result.toString();
     }
@@ -215,9 +209,8 @@ public class PushbulletClient {
             post.setEntity(new UrlEncodedFormEntity(nameValuePairs, "UTF-8"));
 
             HttpResponse response = client.execute(post);
-            if (log_level == 1 || log_level == 3) {
-                log.info(response.getStatusLine());
-            }
+
+            logger.info(response.getStatusLine());
             try (BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
                 for (String line; (line = br.readLine()) != null; ) {
                     result.append(line);
@@ -226,7 +219,7 @@ public class PushbulletClient {
             }
         } catch (IOException e) {
             if (log_level == 2 || log_level == 3) {
-                log.error(e);
+                logger.catching(e);
             }
         }
         return result.toString();
@@ -255,13 +248,11 @@ public class PushbulletClient {
             post.setEntity(new UrlEncodedFormEntity(nameValuePairs, "UTF-8"));
 
             HttpResponse response = client.execute(post);
-            if (log_level == 1 || log_level == 3) {
-                log.info(response.getStatusLine());
-            }
+            logger.info(response.getStatusLine());
             result = collectResponse(response);
         } catch (IOException e) {
             if (log_level == 2 || log_level == 3) {
-                log.error(e);
+                logger.catching(e);
             }
         }
         return result;
@@ -290,13 +281,9 @@ public class PushbulletClient {
             post.setEntity(new UrlEncodedFormEntity(nameValuePairs, "UTF-8"));
 
             response = Optional.of(client.execute(post));
-            if (log_level == 1 || log_level == 3) {
-                log.info(response.get().getStatusLine());
-            }
+            logger.info(response.get().getStatusLine());
         } catch (IOException e) {
-            if (log_level == 2 || log_level == 3) {
-                log.error(e);
-            }
+            logger.catching(e);
         }
         return collectResponse(response.get());
     }
@@ -321,13 +308,9 @@ public class PushbulletClient {
         try {
             post.setEntity(new UrlEncodedFormEntity(nameValuePairs, "UTF-8"));
             response = client.execute(post);
-            if (log_level == 1 || log_level == 3) {
-                log.info(response.getStatusLine());
-            }
+            logger.info(response.getStatusLine());
         } catch (Exception e) {
-            if (log_level == 2 || log_level == 3) {
-                log.error(e);
-            }
+            logger.catching(e);
         }
         return collectResponse(response);
     }
@@ -341,13 +324,10 @@ public class PushbulletClient {
      * @return resulting json from api
      * @throws Exception Any exception that were to occur
      */
-    public String sendFile(boolean device, String iden, File file) throws Exception {
+    public String sendFile(boolean device, String iden, File file) {
 
         if (file.length() >= 26214400) {
-            if (log_level == 2 || log_level == 3) {
-                log.error("The file you are trying to upload is too big. File: " + file.getName() + " Size: " + file.length());
-            }
-            throw new Exception("The file you are trying to upload is too big.");
+            logger.error("The file you are trying to upload is too big. File: " + file.getName() + " Size: " + file.length());
         }
 
         HttpPost post = new HttpPost(URL + "/pushes");
@@ -360,13 +340,9 @@ public class PushbulletClient {
             post.setEntity(builder.build());
 
             response = client.execute(post);
-            if (log_level == 1 || log_level == 3) {
-                log.info(response.getStatusLine());
-            }
+            logger.info(response.getStatusLine());
         } catch (IOException e) {
-            if (log_level == 2 || log_level == 3) {
-                log.error("Unable to access file!", e);
-            }
+            logger.catching(e);
         }
         return collectResponse(response);
     }
@@ -384,8 +360,8 @@ public class PushbulletClient {
         return result.toString();
     }
 
-    public class LOG_LEVEL {
-        public static final int INFO = 1;
-        public static final int ERROR = 2;
+    public Devices getDevice(int id) {
+        return this.getDevices().get(id);
     }
+
 }
