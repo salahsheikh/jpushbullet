@@ -4,6 +4,7 @@ import com.github.silk8192.jpushbullet.items.chat.Chat;
 import com.github.silk8192.jpushbullet.items.chat.Chats;
 import com.github.silk8192.jpushbullet.items.device.Device;
 import com.github.silk8192.jpushbullet.items.device.Devices;
+import com.github.silk8192.jpushbullet.items.push.FileUploadRequest;
 import com.github.silk8192.jpushbullet.items.push.Push;
 import com.github.silk8192.jpushbullet.items.push.Pushes;
 import com.github.silk8192.jpushbullet.items.subscription.Subscription;
@@ -120,6 +121,33 @@ public class PushbulletClient {
         nameValuePairs.add(new BasicNameValuePair("cursor", cursor));
         nameValuePairs.add(new BasicNameValuePair("limit", Integer.toString(limit)));
         return gson.fromJson(post(URL + "/pushes", nameValuePairs), Pushes.class).getPushes();
+    }
+
+    public Push sendNotePush(String title, String body) {
+        List<NameValuePair> nameValuePairs = new ArrayList<>();
+        nameValuePairs.add(new BasicNameValuePair("type", "note"));
+        nameValuePairs.add(new BasicNameValuePair("title", title));
+        nameValuePairs.add(new BasicNameValuePair("body", body));
+        return gson.fromJson(post(URL + "/pushes", nameValuePairs), Push.class);
+    }
+
+    public Push sendLinkPush(String title, String body, String link) {
+        List<NameValuePair> nameValuePairs = new ArrayList<>();
+        nameValuePairs.add(new BasicNameValuePair("type", "link"));
+        nameValuePairs.add(new BasicNameValuePair("title", title));
+        nameValuePairs.add(new BasicNameValuePair("body", body));
+        nameValuePairs.add(new BasicNameValuePair("url", link));
+        return gson.fromJson(post(URL + "/pushes", nameValuePairs), Push.class);
+    }
+
+    public Push sendFilePush(String body, String fileName, String fileType) {
+        List<NameValuePair> nameValuePairs = new ArrayList<>();
+        nameValuePairs.add(new BasicNameValuePair("file_name", fileName));
+        nameValuePairs.add(new BasicNameValuePair("file_type", fileType));
+        FileUploadRequest request = gson.fromJson(post(URL + "/upload-request", nameValuePairs), FileUploadRequest.class);
+        nameValuePairs.add(new BasicNameValuePair("type", "file"));
+        nameValuePairs.add(new BasicNameValuePair("file_url", request.getFileUrl()));
+        return gson.fromJson(post(URL + "/pushes", nameValuePairs), Push.class);
     }
 
     public Push updatePush(String iden, boolean dismissed) {
