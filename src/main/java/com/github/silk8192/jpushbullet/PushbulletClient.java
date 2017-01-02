@@ -32,8 +32,8 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -60,7 +60,7 @@ public class PushbulletClient {
      */
     private Gson gson;
     private String URL = "https://api.pushbullet.com/v2";
-    private Logger logger = LogManager.getLogger();
+    private Logger logger = LoggerFactory.getLogger(PushbulletClient.class);
 
     private List<Device> devices;
 
@@ -188,7 +188,7 @@ public class PushbulletClient {
 
     private void postFile(String fileUploadUrl, File file) {
         if (file.length() >= 26214400) {
-            logger.error("The file you are trying to upload is too big. File: " + file.getName() + " Size: " + file.length());
+            logger.error("The file you are trying to upload is too big. File: {}, Size: {}", file.getName(), file.length());
         }
 
         HttpPost post = new HttpPost(fileUploadUrl);
@@ -199,9 +199,9 @@ public class PushbulletClient {
             post.setEntity(builder.build());
 
             response = client.execute(post);
-            logger.info(response.getStatusLine());
+            logger.info("Status: {}", response.getStatusLine());
         } catch (IOException e) {
-            logger.catching(e);
+            logger.error("While posting file", e);
         }
     }
 
@@ -277,10 +277,10 @@ public class PushbulletClient {
             post.setEntity(new UrlEncodedFormEntity(nameValuePairs, "UTF-8"));
             HttpResponse response = client.execute(post);
 
-            logger.info(response.getStatusLine());
+            logger.info("Status: {}", response.getStatusLine());
             result = collectResponse(response);
         } catch (IOException e) {
-            logger.catching(e);
+            logger.error("While posting", e);
         }
         return result;
     }
@@ -302,12 +302,12 @@ public class PushbulletClient {
         HttpGet get = new HttpGet(path);
         String result = null;
         try (CloseableHttpResponse response = client.execute(get)) {
-            logger.info(response.getStatusLine());
+            logger.info("Status: {}", response.getStatusLine());
             result = collectResponse(response);
         } catch (ClientProtocolException e) {
-            e.printStackTrace();
+            logger.error("While getting", e);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("While getting", e);
         }
         return result;
     }
@@ -317,10 +317,10 @@ public class PushbulletClient {
         String result = null;
         try {
             HttpResponse response = client.execute(delete);
-            logger.info(response.getStatusLine());
+            logger.info("Status: {}", response.getStatusLine());
             result = collectResponse(response);
         } catch (IOException e) {
-            logger.catching(e);
+            logger.error("While getting", e);
         }
         return result;
     }

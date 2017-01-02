@@ -14,8 +14,7 @@ Dependencies:
 =============
 * [Apache HttpClient library](http://hc.apache.org/httpcomponents-client-ga/)
 * [Google gson library](https://code.google.com/p/google-gson/)
-* [Apache Commons Logging](http://commons.apache.org/proper/commons-logging/)
-* Log4j Library
+* [SLF4J Simple Logging Facade for Java](http://www.slf4j.org/)
 
 How to use:
 ===========
