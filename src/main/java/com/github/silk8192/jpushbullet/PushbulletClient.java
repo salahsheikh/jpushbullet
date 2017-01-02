@@ -4,6 +4,10 @@ import com.github.silk8192.jpushbullet.items.chat.Chat;
 import com.github.silk8192.jpushbullet.items.chat.Chats;
 import com.github.silk8192.jpushbullet.items.device.Device;
 import com.github.silk8192.jpushbullet.items.device.Devices;
+import com.github.silk8192.jpushbullet.items.ephemeral.NotificationData;
+import com.github.silk8192.jpushbullet.items.ephemeral.NotificationPush;
+import com.github.silk8192.jpushbullet.items.ephemeral.SMSData;
+import com.github.silk8192.jpushbullet.items.ephemeral.SMSPush;
 import com.github.silk8192.jpushbullet.items.push.FileUploadRequest;
 import com.github.silk8192.jpushbullet.items.push.Push;
 import com.github.silk8192.jpushbullet.items.push.Pushes;
@@ -22,6 +26,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -75,6 +80,10 @@ public class PushbulletClient {
 
     public List<Device> listDevices() {
         return gson.fromJson(get(URL + "/devices"), Devices.class).getDevices();
+    }
+
+    public void deleteDevice(String iden) {
+        delete(URL + "/devices/" + iden);
     }
 
     public List<Chat> getChats() {
@@ -210,6 +219,57 @@ public class PushbulletClient {
         delete(URL + "/pushes");
     }
 
+    public void sendNotificationPush(String title, String body, String applicationName, int clientVersion, boolean dismissible, boolean hasRoot, String icon, String notificationId, String packageName, String sourceDeviceIden, String sourceUserIden) {
+        NotificationPush push = new NotificationPush();
+        push.setPush(new NotificationData());
+        push.setType("push");
+        push.getPush().setType("mirror");
+        push.getPush().setIcon(icon);
+        push.getPush().setClientVersion(clientVersion);
+        push.getPush().setSourceUserIden(sourceUserIden);
+        push.getPush().setSourceDeviceIden(sourceDeviceIden);
+        push.getPush().setBody(body);
+        push.getPush().setDismissable(dismissible);
+        push.getPush().setNotificationId(notificationId);
+        push.getPush().setNotificationTag(null);
+        push.getPush().setApplicationName(applicationName);
+        push.getPush().setHasRoot(hasRoot);
+        push.getPush().setPackageName(packageName);
+        push.getPush().setTitle(title);
+        System.out.println(gson.toJson(push, NotificationPush.class));
+        System.out.println(post(URL + "/ephemerals", gson.toJson(push, NotificationPush.class)));
+    }
+
+    public void sendSMSPush(String convIden, String message, String packageName, String sourceUser, String target) {
+        SMSPush push = new SMSPush();
+        push.setPush(new SMSData());
+        push.getPush().setConversationIden(convIden);
+        push.getPush().setMessage(message);
+        push.getPush().setPackageName(packageName);
+        push.getPush().setSourceUserIden(sourceUser);
+        push.getPush().setTargetDeviceIden(target);
+        push.getPush().setType("messaging_extension_reply");
+        push.setType("push");
+        System.out.println(post(URL + "/ephemerals", gson.toJson(push, SMSPush.class)));
+    }
+
+    private String post(String path, String json) {
+        HttpPost post = new HttpPost(path);
+        String result = null;
+        try {
+            post.setEntity(new StringEntity(json));
+            post.setHeader("Accept", "application/json");
+            post.setHeader("Content-type", "application/json");
+            HttpResponse response = client.execute(post);
+
+            logger.info(response.getStatusLine());
+            result = collectResponse(response);
+        } catch (IOException e) {
+            logger.catching(e);
+        }
+        return result;
+    }
+
     private String post(String path, List<NameValuePair> nameValuePairs) {
         HttpPost post = new HttpPost(path);
         String result = null;
@@ -272,6 +332,10 @@ public class PushbulletClient {
     public Device getDeviceByIden(String iden) {
         Optional<Device> device = this.devices.stream().filter(d -> d.getIden().equals(iden)).filter(Objects::nonNull).findFirst();
         return device.get();
+    }
+
+    public List<Device> getDevices() {
+        return devices;
     }
 
 }
