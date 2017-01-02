@@ -32,10 +32,8 @@ import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -83,6 +81,19 @@ public class PushbulletClient {
         return gson.fromJson(get(URL + "/devices"), Devices.class).getDevices();
     }
 
+    public Device createDevice(String nickname, String model, String manufacturer, String appVersion, String icon, String hasSms) {
+        List<NameValuePair> nameValuePairs = new ArrayList<>();
+        nameValuePairs.add(new BasicNameValuePair("active", "true"));
+        nameValuePairs.add(new BasicNameValuePair("app_version", appVersion));
+        nameValuePairs.add(new BasicNameValuePair("push_token", ""));
+        nameValuePairs.add(new BasicNameValuePair("manufacturer", manufacturer));
+        nameValuePairs.add(new BasicNameValuePair("model", model));
+        nameValuePairs.add(new BasicNameValuePair("has_sms", String.valueOf(hasSms)));
+        nameValuePairs.add(new BasicNameValuePair("icon", icon));
+        nameValuePairs.add(new BasicNameValuePair("nickname", icon));
+        return gson.fromJson(post(URL + "/devices", nameValuePairs), Device.class);
+    }
+
     public void deleteDevice(String iden) {
         delete(URL + "/devices/" + iden);
     }
@@ -121,6 +132,14 @@ public class PushbulletClient {
         List<NameValuePair> nameValuePairs = new ArrayList<>();
         nameValuePairs.add(new BasicNameValuePair("muted", String.valueOf(muted)));
         return gson.fromJson(post(URL + "/subscriptions/" + iden, nameValuePairs), Subscription.class);
+    }
+
+    public void channelInfo(String channelTag, boolean noRecentPushes) {
+        try {
+            get(URL + "/channel-info?tag=" + URLEncoder.encode(channelTag, "UTF-8") + "&no_recent_pushes=" + URLEncoder.encode(String.valueOf(noRecentPushes), "UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
     }
 
     public void deleteSubscription(String iden) {
