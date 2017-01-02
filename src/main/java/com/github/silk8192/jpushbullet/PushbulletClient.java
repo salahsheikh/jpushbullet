@@ -22,6 +22,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -30,6 +31,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -166,14 +168,32 @@ public class PushbulletClient {
         }
     }
 
-    public Push sendFilePush(String body, String fileName, String fileType) {
+    public void sendFilePush(String body, String fileName, String fileType, File file) {
         List<NameValuePair> nameValuePairs = new ArrayList<>();
         nameValuePairs.add(new BasicNameValuePair("file_name", fileName));
         nameValuePairs.add(new BasicNameValuePair("file_type", fileType));
         FileUploadRequest request = gson.fromJson(post(URL + "/upload-request", nameValuePairs), FileUploadRequest.class);
-        nameValuePairs.add(new BasicNameValuePair("type", "file"));
-        nameValuePairs.add(new BasicNameValuePair("file_url", request.getFileUrl()));
-        return gson.fromJson(post(URL + "/pushes", nameValuePairs), Push.class);
+        System.out.println(request.getFileUrl());
+        postFile(request.getUploadUrl(), file);
+    }
+
+    private void postFile(String fileUploadUrl, File file) {
+        if (file.length() >= 26214400) {
+            logger.error("The file you are trying to upload is too big. File: " + file.getName() + " Size: " + file.length());
+        }
+
+        HttpPost post = new HttpPost(fileUploadUrl);
+        HttpResponse response = null;
+        try {
+            MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+            builder.addBinaryBody("file", file);
+            post.setEntity(builder.build());
+
+            response = client.execute(post);
+            logger.info(response.getStatusLine());
+        } catch (IOException e) {
+            logger.catching(e);
+        }
     }
 
     public Push updatePush(String iden, boolean dismissed) {
