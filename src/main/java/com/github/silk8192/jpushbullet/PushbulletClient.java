@@ -4,10 +4,7 @@ import com.github.silk8192.jpushbullet.items.chat.Chat;
 import com.github.silk8192.jpushbullet.items.chat.Chats;
 import com.github.silk8192.jpushbullet.items.device.Device;
 import com.github.silk8192.jpushbullet.items.device.Devices;
-import com.github.silk8192.jpushbullet.items.ephemeral.NotificationData;
-import com.github.silk8192.jpushbullet.items.ephemeral.NotificationPush;
-import com.github.silk8192.jpushbullet.items.ephemeral.SMSData;
-import com.github.silk8192.jpushbullet.items.ephemeral.SMSPush;
+import com.github.silk8192.jpushbullet.items.ephemeral.*;
 import com.github.silk8192.jpushbullet.items.push.FileUploadRequest;
 import com.github.silk8192.jpushbullet.items.push.Push;
 import com.github.silk8192.jpushbullet.items.push.Pushes;
@@ -43,6 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Controls all connection to the Pushbullet API. Contains all methods to access and send data.
@@ -64,6 +62,8 @@ public class PushbulletClient {
 
     private List<Device> devices;
 
+    private User currentUser;
+
     /**
      * Create instances of the http client and other needed things. Also specifies what logging level to use.
      *
@@ -75,7 +75,8 @@ public class PushbulletClient {
         credsProvider.setCredentials(new AuthScope("api.pushbullet.com", 443), new UsernamePasswordCredentials(api_key, null));
         this.client = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build();
         this.gson = new Gson();
-        this.devices = listDevices();
+        this.devices = this.listDevices();
+        this.currentUser = this.updateCurrentUser();
     }
 
     public List<Device> listDevices() {
@@ -126,8 +127,16 @@ public class PushbulletClient {
         delete(URL + "/subscriptions/" + iden);
     }
 
-    public User getCurrentUser() {
+    public User updateCurrentUser() {
         return gson.fromJson(get(URL + "/users/me"), User.class);
+    }
+
+    public User getCurrentUser() {
+        return this.currentUser;
+    }
+
+    public String getCurrentUserIden() {
+        return this.currentUser.getIden();
     }
 
     public List<Push> listPushes(String modifiedAfter, String active, String cursor, int limit) {
@@ -219,14 +228,14 @@ public class PushbulletClient {
         delete(URL + "/pushes");
     }
 
-    public void sendNotificationPush(String title, String body, String applicationName, int clientVersion, boolean dismissible, boolean hasRoot, String icon, String notificationId, String packageName, String sourceDeviceIden, String sourceUserIden) {
+    public void sendNotificationPush(String title, String body, String applicationName, int clientVersion, boolean dismissible, boolean hasRoot, String icon, String notificationId, String packageName, String sourceDeviceIden) {
         NotificationPush push = new NotificationPush();
         push.setPush(new NotificationData());
         push.setType("push");
         push.getPush().setType("mirror");
         push.getPush().setIcon(icon);
         push.getPush().setClientVersion(clientVersion);
-        push.getPush().setSourceUserIden(sourceUserIden);
+        push.getPush().setSourceUserIden(this.getCurrentUserIden());
         push.getPush().setSourceDeviceIden(sourceDeviceIden);
         push.getPush().setBody(body);
         push.getPush().setDismissable(dismissible);
@@ -240,17 +249,26 @@ public class PushbulletClient {
         System.out.println(post(URL + "/ephemerals", gson.toJson(push, NotificationPush.class)));
     }
 
-    public void sendSMSPush(String convIden, String message, String packageName, String sourceUser, String target) {
+    public void sendSMSPush(String convIden, String message, String packageName, String target) {
         SMSPush push = new SMSPush();
         push.setPush(new SMSData());
         push.getPush().setConversationIden(convIden);
         push.getPush().setMessage(message);
         push.getPush().setPackageName(packageName);
-        push.getPush().setSourceUserIden(sourceUser);
+        push.getPush().setSourceUserIden(this.getCurrentUserIden());
         push.getPush().setTargetDeviceIden(target);
         push.getPush().setType("messaging_extension_reply");
         push.setType("push");
         System.out.println(post(URL + "/ephemerals", gson.toJson(push, SMSPush.class)));
+    }
+
+    public void sendClipboardPush(String body) {
+        ClipboardPush push = new ClipboardPush();
+        push.setType("push");
+        push.setPush(new ClipboardData());
+        push.getPush().setBody(body);
+        push.getPush().setSourceUserIden(this.getCurrentUserIden());
+        push.getPush().setType("clip");
     }
 
     private String post(String path, String json) {
@@ -262,10 +280,10 @@ public class PushbulletClient {
             post.setHeader("Content-type", "application/json");
             HttpResponse response = client.execute(post);
 
-            logger.info(response.getStatusLine());
+            logger.info(response.getStatusLine().toString());
             result = collectResponse(response);
         } catch (IOException e) {
-            logger.catching(e);
+            logger.error("Error sending post request", e);
         }
         return result;
     }
@@ -335,7 +353,7 @@ public class PushbulletClient {
     }
 
     public List<Device> getDevices() {
-        return devices;
+        return devices.stream().filter(d -> d.getActive()).collect(Collectors.toList());
     }
 
 }
