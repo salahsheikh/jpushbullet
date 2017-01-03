@@ -8,6 +8,7 @@ import com.github.silk8192.jpushbullet.items.ephemeral.*;
 import com.github.silk8192.jpushbullet.items.push.FileUploadRequest;
 import com.github.silk8192.jpushbullet.items.push.Push;
 import com.github.silk8192.jpushbullet.items.push.Pushes;
+import com.github.silk8192.jpushbullet.items.subscription.ChannelInfo;
 import com.github.silk8192.jpushbullet.items.subscription.Subscription;
 import com.github.silk8192.jpushbullet.items.subscription.Subscriptions;
 import com.github.silk8192.jpushbullet.items.user.User;
@@ -134,12 +135,20 @@ public class PushbulletClient {
         return gson.fromJson(post(URL + "/subscriptions/" + iden, nameValuePairs), Subscription.class);
     }
 
-    public void channelInfo(String channelTag, boolean noRecentPushes) {
+    public ChannelInfo channelInfo(String channelTag, boolean noRecentPushes) {
         try {
-            get(URL + "/channel-info?tag=" + URLEncoder.encode(channelTag, "UTF-8") + "&no_recent_pushes=" + URLEncoder.encode(String.valueOf(noRecentPushes), "UTF-8"));
+            ChannelInfo channelInfo = gson.fromJson(get(URL + "/channel-info?tag="
+                    + URLEncoder.encode(channelTag, "UTF-8")
+                    + "&no_recent_pushes=" + URLEncoder.encode(String.valueOf(noRecentPushes), "UTF-8")), ChannelInfo.class);
+            if(channelInfo.getIden() == null) {
+                logger.error("Could not request channel info for given tag: " + channelTag);
+                return null;
+            }
+            return channelInfo;
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
+        return null;
     }
 
     public void deleteSubscription(String iden) {
