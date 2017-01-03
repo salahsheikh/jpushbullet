@@ -4,6 +4,7 @@ jpushbullet
 A simple library to interface/use/access the Pushbullet API (v2) written with Java 8.
 Current feature set:
 
+#### Ephemerals: sending clipboard, notification, and sms pushes
 #### Chat: list, create, update, delete. 
 #### Device: list, create, update, delete.
 #### Push: list, create, update, delete, delete all
@@ -23,18 +24,8 @@ jpushbullet is intended to be very simple and lightweight. To start, you need to
 
 ```
 PushbulletClient client = new PushbulletClient(api_key);
-```
-
 This creates the connection to Pushbullet's REST API and supplies the api_key used to identify users (as passed into the constructor). FYI, you can get the api key from https://www.pushbullet.com/account when logged in.
 
-To get devices:
-```
-PushbulletDevice devices = client.getDevices();
-```
-
-> *How to send things via jpushbullet*
-
-```
 Chats:
 getChats()
 returns a list of all chats
@@ -71,13 +62,16 @@ returns the updated Subscription object
 
 deleteSubscription(subscription iden)
 
-
+channelInfo(channelTag, whether the method should return recent pushes)
+returns a ChannelInfo object
 
 General:
 client.sendNotePush(title, body);
 
-//To send links
 client.sendLinkPush(title, body, link);
+
+sendFilePush(a message, exact filename including file extension, the file MIME type, a java File object that referneces the file)
+
 
 Ephemerals:
 For sms:
